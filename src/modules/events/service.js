@@ -4,6 +4,7 @@ import { notifyChanges } from '../../shared/domain-events.js';
 import { validateEvent } from './validation.js';
 import { findEvent, recordAttempt } from './repository.js';
 import { processCount } from './count.js';
+import { processVoid, resolvePendingVoids } from './void.js';
 
 export async function processEventsInTransaction(client, items, context = {}, notifications = []) {
   const results = [];
@@ -25,8 +26,9 @@ export async function processEventsInTransaction(client, items, context = {}, no
       } else if (event.type === 'COUNT') {
         result = await processCount(client, event, notifications);
       } else {
-        result = { event_id: event.event_id, status: 'REJECTED', message: 'VOID processing is not available yet.' };
+        result = await processVoid(client, event, notifications);
       }
+      if (!original) await resolvePendingVoids(client, event.event_id, notifications);
     }
     await recordAttempt(client, raw, result, context);
     results.push(result);
