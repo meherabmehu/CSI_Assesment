@@ -1,21 +1,30 @@
-# AI usage disclosure
+# AI Usage
 
-This assessment was developed with assistance from OpenAI Codex. The candidate requested an explanation of the full brief in simple Bengali, discussed backend/frontend/database/MQTT responsibilities, configured the local PostgreSQL password, provided the GitHub repository and authorized implementation, meaningful commits and pushes. The candidate explicitly confirmed employee/candidate ID `08`.
+## How AI was used
 
-## AI-assisted work
+I used OpenAI Codex to understand the assessment, build the application, review bugs, and implement the later change request. I discussed the requirements in Bengali and asked for simple explanations before moving on to development.
 
-- Read the seven-page assessment PDF and identified inconsistent requirements.
-- Explained entities, COUNT/VOID, retries, ACK, PostgreSQL and MQTT to the candidate.
-- Created Node.js/Express modules, PostgreSQL schema/setup, MQTT worker and simulator, dashboard, tests and documentation.
-- Ran real PostgreSQL/local MQTT tests and headless browser checks; generated evidence and a clean source archive.
-- Created genuine progress commits as features were implemented and pushed authorized changes to the candidate's repository.
+The AI helped with:
 
-The framework selection and three unclarified rule decisions are explained in `TECHNICAL_EXPLANATION.md`. The optional Protocol Buffers bonus was not implemented.
+- Explaining the backend, frontend, PostgreSQL, and MQTT responsibilities.
+- Reading the assessment PDF and documenting unclear or conflicting rules.
+- Setting up the local database connection and connecting the supplied GitHub repository.
+- Implementing the existing Node.js/Express modular monolith, PostgreSQL storage, MQTT worker, and dashboard.
+- Reviewing bugs, adding regression tests, running local broker and browser checks, and preparing submission files.
+- Applying the change request: COUNT quantities from 1 to 500, persistent rejected-submission totals, a production-source input, and a seventh dashboard indicator.
 
-## Candidate ownership and review
+## My input and decisions
 
-AI assistance does not establish that the candidate independently wrote every line. The candidate should review the functions, run the demo and be ready to explain or change a rule during assessment review. No claim of unaided authorship is made. Passwords stay in ignored `.env`; no credentials are included in the submitted source.
+I provided the assessment, repository URL, local database setup, and employee ID `08`. I asked for meaningful commits, complete implementation, a careful bug review, and changes to the existing application. I entered the database credentials locally; they are kept in the ignored `.env` file.
+
+I also asked for short, clear explanations and an English conversation record suitable for the interview submission. The framework choice and interpretations of conflicting requirements are documented in [TECHNICAL_EXPLANATION.md](TECHNICAL_EXPLANATION.md).
+
+## Checks and limitations
+
+The updated version passes 55 automated tests and 20 browser checks. These use temporary PostgreSQL databases and a real local MQTT broker. They cover accepted and rejected counts, source filtering, persistence, existing VOID/ACK behavior, retries, errors, and mobile layout.
+
+The external assessment broker has not been tested because permission to send database-derived results to that destination is still pending. The optional Protocol Buffers bonus was not implemented. No claim of writing the entire application without AI assistance is made.
 
 ## Conversation record
 
-`AI_CONVERSATION.md` is a curated relevant conversation record: actual user instructions are quoted and assistant actions are summarized explicitly. It is not a verbatim platform chat export. If the examiner requires a complete original transcript, the candidate must export and attach the platform conversation as well.
+[AI_CONVERSATION.md](AI_CONVERSATION.md) contains English translations and condensed summaries of the actual conversation. Related messages are grouped to keep the record short. It is not a verbatim chat export, and it does not include passwords or tool logs.
