@@ -12,8 +12,8 @@ export function validateEvent(input) {
   if (!eventTime) return { error: 'event_time must be a valid ISO 8601 timestamp with a timezone.' };
 
   if (input.type === 'COUNT') {
-    if (!Number.isInteger(input.quantity) || input.quantity < 1 || input.quantity > 2147483647) {
-      return { error: 'COUNT quantity must be a positive integer, up to 2147483647.' };
+    if (!Number.isInteger(input.quantity) || input.quantity < 1 || input.quantity > 500) {
+      return { error: 'COUNT quantity must be an integer from 1 to 500, inclusive.' };
     }
     if (input.target_event_id != null) return { error: 'COUNT must not specify target_event_id.' };
   } else {

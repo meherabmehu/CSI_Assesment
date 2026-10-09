@@ -26,10 +26,54 @@ const summary = () => getState(db.pool);
 const send = (items) => processEvents(db.pool, items);
 const post = (path, body) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
+test('COUNT accepts 1, 450 and 500 but rejects out-of-range and non-integer quantities', async () => {
+  const quantities = [1, 450, 500, 501, 0, -1, 1.5, '5'];
+  const result = await send(quantities.map((quantity, i) => count(`BOUND-${i}`, quantity)));
+  assert.deepEqual(result.results.map(item => item.status), ['ACCEPTED', 'ACCEPTED', 'ACCEPTED', 'REJECTED', 'REJECTED', 'REJECTED', 'REJECTED', 'REJECTED']);
+  assert.match(result.results[3].message, /1 to 500/);
+  assert.equal((await summary()).net_total, 951);
+  assert.equal((await summary()).rejected_submissions, 5);
+  assert.equal((await db.pool.query('SELECT count(*) FROM submission_attempts')).rows[0].count, '8');
+});
+
+test('rejected submissions are persistent attempt counts, filtered by source and excluding other statuses', async () => {
+  await send([count('GOOD'), count('GOOD'), count('GOOD', 6), voidEvent('WAITING', 'MISSING'),
+    count('BAD-1', 501), count('BAD-2', 0, 'LINE-02'), {}]);
+  assert.deepEqual(await summary(), { net_total: 5, processed_events: 1, pending_ack: 1, unresolved: 1, duplicates: 1, conflicts: 1, rejected_submissions: 3 });
+  for (const [source, expected] of [['LINE-01', 1], ['LINE-02', 1], ['UNKNOWN', 0]]) {
+    const response = await fetch(base + `/api/state?view=summary&source_id=${source}`);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).rejected_submissions, expected);
+  }
+  const secondPool = createPool({ database: db.database });
+  try { assert.equal((await getState(secondPool)).rejected_submissions, 3); }
+  finally { await secondPool.end(); }
+});
+
+test('a pending VOID rejected during later resolution does not become a rejected submission attempt', async () => {
+  await send([voidEvent('FIRST', 'TARGET'), voidEvent('SECOND', 'TARGET'), count('TARGET')]);
+  assert.equal((await summary()).rejected_submissions, 0);
+  assert.equal((await summary()).net_total, 0);
+  assert.equal((await getState(db.pool, 'exceptions')).events[0].status, 'REJECTED');
+});
+
+test('REST and MQTT share the quantity limit and return the same seven-field summary', async () => {
+  const rest = await post('/api/events', [count('REST-450', 450), count('REST-501', 501)]);
+  assert.deepEqual((await rest.json()).results.map(item => item.status), ['ACCEPTED', 'REJECTED']);
+  const response = await handleChallenge(db.pool, challenge([count('MQTT-450', 450), count('MQTT-501', 501)]), '08');
+  assert.equal(response.status, 'COMPLETED');
+  assert.deepEqual(response.results.map(item => item.status), ['ACCEPTED', 'REJECTED']);
+  assert.deepEqual(response.state, await summary());
+  assert.equal(response.state.net_total, 900);
+  assert.equal(response.state.rejected_submissions, 2);
+  const rows = (await db.pool.query("SELECT transport FROM submission_attempts WHERE classification = 'REJECTED' ORDER BY id")).rows;
+  assert.deepEqual(rows.map(row => row.transport), ['REST', 'MQTT']);
+});
+
 test('COUNT adds production and creates a pending supervisor review', async () => {
   const result = await send([count()]);
   assert.equal(result.results[0].status, 'ACCEPTED');
-  assert.deepEqual(await summary(), { net_total: 5, processed_events: 1, pending_ack: 1, unresolved: 0, duplicates: 0, conflicts: 0 });
+  assert.deepEqual(await summary(), { net_total: 5, processed_events: 1, pending_ack: 1, unresolved: 0, duplicates: 0, conflicts: 0, rejected_submissions: 0 });
 });
 
 test('an identical retry is stored without double counting', async () => {
@@ -110,7 +154,7 @@ test('VOID before COUNT resolves automatically and retains both records', async 
   assert.equal((await send([voidEvent()])).results[0].status, 'PENDING_REFERENCE');
   assert.equal((await summary()).unresolved, 1);
   await send([count()]);
-  assert.deepEqual(await summary(), { net_total: 0, processed_events: 2, pending_ack: 1, unresolved: 0, duplicates: 0, conflicts: 0 });
+  assert.deepEqual(await summary(), { net_total: 0, processed_events: 2, pending_ack: 1, unresolved: 0, duplicates: 0, conflicts: 0, rejected_submissions: 0 });
   const events = (await db.pool.query('SELECT * FROM production_events')).rows;
   assert.equal(events.length, 2);
   assert.equal(events.find((event) => event.type === 'VOID').acknowledgement_method, 'AUTOMATIC');

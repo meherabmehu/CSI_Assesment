@@ -4,6 +4,7 @@ const number = new Intl.NumberFormat('en-US');
 const formatTime = (value) => value ? new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
 const selected = new Set();
 let snapshot = null;
+let activeSource = '';
 let view = 'pending';
 let latestCount = null;
 let refreshVersion = 0;
@@ -113,21 +114,21 @@ async function refresh({ manual = false } = {}) {
   refreshController = controller;
   const version = ++refreshVersion;
   $('refresh').disabled = true;
+  $('source-feedback').textContent = activeSource ? `Loading ${activeSource}…` : 'Loading all production lines…';
   const timeout = setTimeout(() => controller.abort(), 12000);
   try {
-    const source = $('source-filter').value;
+    const source = activeSource;
     const data = await api('/api/dashboard' + (source ? `?source_id=${encodeURIComponent(source)}` : ''), { signal: controller.signal });
     if (version !== refreshVersion) return;
     snapshot = data;
     for (const [key, value] of Object.entries(data.summary)) $(`metric-${key}`).textContent = number.format(value);
     const pendingIds = new Set(data.pending.map((event) => event.event_id));
     for (const id of selected) if (!pendingIds.has(id)) selected.delete(id);
-    const choices = [['', 'All production lines'], ...data.sources.map((line) => [line.source_id, line.display_name])];
+    const choices = data.sources.map((line) => [line.source_id, line.display_name]);
     if (source && !choices.some(([id]) => id === source)) choices.push([source, source]);
     const choiceSignature = JSON.stringify(choices);
     if ($('source-filter').dataset.choices !== choiceSignature) {
-      $('source-filter').innerHTML = choices.map(([id, name]) => `<option value="${escape(id)}">${escape(name)}</option>`).join('');
-      $('source-filter').value = source;
+      $('source-options').innerHTML = choices.map(([id, name]) => `<option value="${escape(id)}">${escape(name)}</option>`).join('');
       $('source-filter').dataset.choices = choiceSignature;
     }
     $('source-count').textContent = `${data.sources.length} production ${data.sources.length === 1 ? 'line' : 'lines'}`;
@@ -136,12 +137,14 @@ async function refresh({ manual = false } = {}) {
     $('updated').textContent = `Updated ${formatTime(new Date().toISOString())}`;
     $('sync-label').textContent = 'Updates every 5 seconds';
     $('connection-error').hidden = true;
+    $('source-feedback').textContent = source ? `Showing ${source}` : 'Showing all production lines';
     renderTable();
     renderMqtt(data.mqtt);
   } catch (error) {
     if (version !== refreshVersion) return;
     $('connection-error').textContent = error.name === 'AbortError' ? 'The server is taking too long to respond. Refresh to try again.' : `Could not refresh production data. ${error.message}`;
     $('connection-error').hidden = false;
+    $('source-feedback').textContent = 'Filter could not load. The displayed data is from the last successful update.';
     $('sync-label').textContent = snapshot ? 'Showing the last successful update' : 'Waiting for the backend';
   } finally {
     clearTimeout(timeout);
@@ -151,7 +154,7 @@ async function refresh({ manual = false } = {}) {
 
 function example(type) {
   const id = `EV-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-  const base = { source_id: $('source-filter').value || 'LINE-01', event_id: id, type: 'COUNT', quantity: 5, event_time: new Date().toISOString() };
+  const base = { source_id: activeSource || 'LINE-01', event_id: id, type: 'COUNT', quantity: 5, event_time: new Date().toISOString() };
   let payload;
   if (type === 'count') payload = base;
   else if (type === 'void') payload = { ...base, source_id: latestCount?.source_id || base.source_id,
@@ -234,7 +237,19 @@ document.querySelectorAll('[data-view]').forEach((button) => button.addEventList
   renderTable();
 }));
 $('event-search').addEventListener('input', renderTable);
-$('source-filter').addEventListener('change', () => { selected.clear(); refresh({ manual: true }); });
+$('source-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  activeSource = $('source-filter').value.trim();
+  $('source-filter').value = activeSource;
+  selected.clear();
+  refresh({ manual: true });
+});
+$('clear-source').addEventListener('click', () => {
+  activeSource = '';
+  $('source-filter').value = '';
+  selected.clear();
+  refresh({ manual: true });
+});
 $('refresh').addEventListener('click', () => refresh({ manual: true }));
 document.querySelectorAll('.nav-link').forEach((link) => link.addEventListener('click', () => {
   document.querySelectorAll('.nav-link').forEach((item) => item.classList.toggle('active', item === link));

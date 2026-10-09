@@ -51,7 +51,7 @@ Open **http://127.0.0.1:3000**. The startup command applies the idempotent table
 6. Open **Exceptions** for unresolved references, rejected submissions and conflicts. **History** records every event submission attempt, including duplicates.
 7. See the MQTT connection, employee ID, challenge counts and matching response on the right. Expand **View latest response** to inspect the actual correlated JSON.
 
-The source selector filters the event views and summary by production line. MQTT challenge state always represents the whole factory. The dashboard refreshes every five seconds and after mutations. Lists show the latest 200 records; summary values count all stored records. All times are rendered in the browser's local timezone.
+Enter a production source and choose Apply to filter the event views and summary. Choose Clear to see all sources. MQTT challenge state always represents the whole factory. The dashboard refreshes every five seconds and after mutations. Lists show the latest 200 records; summary values count all stored records. All times are rendered in the browser's local timezone.
 
 ## REST examples
 
@@ -99,7 +99,7 @@ Results follow submitted order: `PENDING_REFERENCE`, `ACCEPTED`, `REJECTED`. The
 Summary example after one fresh COUNT +5:
 
 ```json
-{"net_total":5,"processed_events":1,"pending_ack":1,"unresolved":0,"duplicates":0,"conflicts":0}
+{"net_total":5,"processed_events":1,"pending_ack":1,"unresolved":0,"duplicates":0,"conflicts":0,"rejected_submissions":0}
 ```
 
 Pending, exceptions and history return `{ "events": [...] }`. Extra convenience endpoints: `/api/dashboard` returns a consistent snapshot plus MQTT monitoring; `/api/health` verifies database connectivity.
@@ -142,7 +142,7 @@ To send a custom challenge: `npm run simulate -- path/to/challenge.json`. Supply
 }
 ```
 
-A response includes matching `challenge_id`, status `COMPLETED`, ordered `results` and all six `state` fields. Invalid individual events may be `REJECTED` while the challenge is `COMPLETED`. Envelope failures return `FAILED`, `error_code` and `message`. MQTT PUBACK alone does not establish business success; the correlated application response does.
+A response includes matching `challenge_id`, status `COMPLETED`, ordered `results` and all seven `state` fields. Invalid individual events may be `REJECTED` while the challenge is `COMPLETED`. Envelope failures return `FAILED`, `error_code` and `message`. MQTT PUBACK alone does not establish business success; the correlated application response does.
 
 ## Tests and evidence
 
@@ -151,9 +151,9 @@ npm test
 npm run test:browser
 ```
 
-The automated suite has **51 tests**, including the five required cases, timestamp precision and upgrade compatibility, Unicode/deep-input isolation, races, partial batches, transactions, API errors, startup cleanup, client timeouts, real local MQTT transport, candidate validation, replay, shutdown deadlines, heartbeat and broker restart. MQTT tests use a disposable Aedes broker and do not contact the assessment broker. Every test database has a generated `cis_assessment_test_*` name and is dropped after testing; the main project database is never truncated.
+The automated suite has **55 tests**, including the five required cases, timestamp precision and upgrade compatibility, Unicode/deep-input isolation, races, partial batches, transactions, API errors, startup cleanup, client timeouts, real local MQTT transport, candidate validation, replay, shutdown deadlines, heartbeat and broker restart. MQTT tests use a disposable Aedes broker and do not contact the assessment broker. Every test database has a generated `cis_assessment_test_*` name and is dropped after testing; the main project database is never truncated.
 
-Browser verification covers 15 end-to-end checks using a disposable PostgreSQL database, a real local MQTT broker and headless Edge/Chromium. On Windows it uses installed Edge. Otherwise install Chromium with `npx playwright install chromium`, or set `BROWSER_PATH` to a Chromium-compatible executable. It generates desktop/mobile/exception/API/MQTT screenshots and `artifacts/browser-verification.json`. Screenshot values are isolated test fixtures, not factory production.
+Browser verification covers 20 end-to-end checks using a disposable PostgreSQL database, a real local MQTT broker and headless Edge/Chromium. On Windows it uses installed Edge. Otherwise install Chromium with `npx playwright install chromium`, or set `BROWSER_PATH` to a Chromium-compatible executable. It generates desktop/mobile/exception/API/MQTT screenshots and `artifacts/browser-verification.json`. Screenshot values are isolated test fixtures, not factory production.
 
 Inputs containing NUL/unpaired Unicode or more than 64 JSON levels are rejected without undoing valid batch siblings. Exact serialized submission JSON is retained in a TEXT history column alongside a safe JSONB projection. Frontend mutations time out after 15 seconds with an explicit unknown-outcome message; retry with the same IDs. See [artifacts/BUG_REVIEW.md](artifacts/BUG_REVIEW.md) for the bug audit and regression evidence.
 
@@ -178,3 +178,7 @@ This archives the committed source to `artifacts/source.zip`, including document
 - Git ownership error on this Windows workspace: use `git -c safe.directory=D:/Project/CIS_Assesment status` (the path is scoped to this repository).
 
 Library references: [Express API](https://expressjs.com/en/5x/api/), [node-postgres transactions](https://node-postgres.com/features/transactions), [MQTT.js](https://github.com/mqttjs/MQTT.js). No cloud deployment or sign-in system is required by the assessment; the app listens on loopback by default.
+
+## Change request
+
+COUNT accepts integer quantities from 1 to 500. The summary includes `rejected_submissions`, counted from PostgreSQL submission attempts with status REJECTED. Enter a source in the dashboard and choose Apply, or Clear to view all sources. See [CHANGE_REQUEST.md](CHANGE_REQUEST.md) for the changed functions and demo evidence.

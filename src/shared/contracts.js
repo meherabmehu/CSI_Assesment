@@ -1,4 +1,4 @@
-export const SUMMARY_FIELDS = ['net_total', 'processed_events', 'pending_ack', 'unresolved', 'duplicates', 'conflicts'];
+export const SUMMARY_FIELDS = ['net_total', 'processed_events', 'pending_ack', 'unresolved', 'duplicates', 'conflicts', 'rejected_submissions'];
 
 export function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);

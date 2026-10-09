@@ -8,7 +8,8 @@ export async function getSummary(client, sourceId = null) {
       (SELECT count(*) FROM production_events WHERE status = 'ACCEPTED' AND acknowledged_at IS NULL AND ($1::text IS NULL OR source_id = $1)) AS pending_ack,
       (SELECT count(*) FROM production_events WHERE status = 'PENDING_REFERENCE' AND ($1::text IS NULL OR source_id = $1)) AS unresolved,
       (SELECT count(*) FROM submission_attempts WHERE classification = 'DUPLICATE' AND ($1::text IS NULL OR source_id = $1)) AS duplicates,
-      (SELECT count(*) FROM submission_attempts WHERE classification = 'CONFLICT' AND ($1::text IS NULL OR source_id = $1)) AS conflicts
+      (SELECT count(*) FROM submission_attempts WHERE classification = 'CONFLICT' AND ($1::text IS NULL OR source_id = $1)) AS conflicts,
+      (SELECT count(*) FROM submission_attempts WHERE classification = 'REJECTED' AND ($1::text IS NULL OR source_id = $1)) AS rejected_submissions
   `, [sourceId]);
   return Object.fromEntries(Object.entries(rows[0]).map(([key, value]) => [key, Number(value)]));
 }

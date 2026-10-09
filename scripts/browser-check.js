@@ -102,17 +102,53 @@ try {
   assert.ok((await page.locator('#submit-message').textContent()).includes('valid JSON'));
   assert.equal(await page.locator('#submission-results').textContent(), '');
   pass('Invalid JSON shows a helpful inline error');
-  await page.locator('#source-filter').selectOption('LINE-02');
+  await page.locator('#source-filter').fill('LINE-02');
+  await page.locator('#source-form').getByRole('button', { name: 'Apply', exact: true }).click();
   await page.waitForFunction(() => document.getElementById('metric-net_total').textContent === '85');
   pass('The source filter loads that line’s actual production and exceptions');
 
-  await page.locator('#source-filter').selectOption('');
+  await page.locator('#clear-source').click();
   await page.waitForFunction(() => document.getElementById('metric-net_total').textContent === '240');
   await page.locator('#tab-pending').click();
   await page.locator('#event-search').fill('DOES-NOT-EXIST');
   assert.ok((await page.locator('#table-empty').textContent()).includes('No matching events'));
   await page.locator('#event-search').fill('');
   pass('Searching events handles an empty result');
+
+  for (const quantity of [450, 501]) {
+    await page.locator('#event-input').fill(JSON.stringify(count(`CHANGE-${quantity}`, quantity, 'CR-LINE')));
+    await page.locator('#submit-button').click();
+    await page.waitForFunction((expected) => document.querySelector('#submission-results .badge')?.textContent === expected, quantity === 450 ? 'ACCEPTED' : 'REJECTED');
+    await page.waitForFunction(() => !document.getElementById('refresh').disabled);
+    assert.equal(await page.locator('#metric-net_total').textContent(), '690');
+  }
+  assert.equal(await page.locator('#metric-rejected_submissions').textContent(), '2');
+  pass('COUNT 450 is accepted and COUNT 501 is rejected without increasing production');
+  await page.locator('#source-filter').fill('CR-LINE');
+  await page.locator('#source-form').getByRole('button', { name: 'Apply', exact: true }).click();
+  await page.waitForFunction(() => document.getElementById('metric-net_total').textContent === '450');
+  assert.equal(await page.locator('#metric-rejected_submissions').textContent(), '1');
+  assert.equal(await page.locator('[data-event-checkbox]').count(), 1);
+  await page.locator('#tab-exceptions').click();
+  assert.ok((await page.locator('#table-body').textContent()).includes('CHANGE-501'));
+  assert.ok(!(await page.locator('#table-body').textContent()).includes('EV-INVALID'));
+  await page.screenshot({ path: artifactDir + 'change-request-source.png', fullPage: true });
+  pass('The entered source filters summary, pending, exceptions and rejected attempts together');
+  await page.locator('#source-filter').fill('NO-SUCH-SOURCE');
+  await page.locator('#source-filter').press('Enter');
+  await page.waitForFunction(() => document.getElementById('metric-net_total').textContent === '0');
+  assert.equal(await page.locator('#metric-rejected_submissions').textContent(), '0');
+  assert.ok(await page.locator('#table-empty').isVisible());
+  pass('An unknown source shows zero metrics and a useful empty state');
+  await page.locator('#source-filter').fill('LINE-02');
+  await page.locator('#refresh').click();
+  await page.waitForFunction(() => !document.getElementById('refresh').disabled);
+  assert.equal(await page.locator('#metric-net_total').textContent(), '0');
+  pass('Typing a source does not change the applied filter during refresh');
+  await page.locator('#clear-source').click();
+  await page.waitForFunction(() => document.getElementById('metric-net_total').textContent === '690');
+  assert.equal(await page.locator('#metric-rejected_submissions').textContent(), '2');
+  pass('Clearing the source restores all production and rejected submissions');
 
   await page.getByRole('button', { name: 'Count +5', exact: true }).click();
   await page.locator('#event-input').blur();

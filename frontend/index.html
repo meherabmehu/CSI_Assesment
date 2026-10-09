@@ -30,7 +30,8 @@
       <div id="connection-error" class="notice error" role="alert" hidden></div>
       <section class="overview-banner"><div><span class="banner-label"><span class="small-dot"></span> LIVE OPERATIONS</span><h2>Good decisions start with a reliable count.</h2><p>Track production across your floor. Keep every change in view.</p></div><div class="banner-detail"><span class="banner-icon" aria-hidden="true">▥</span><span id="source-count">— production lines</span><small id="updated">Waiting for your first update</small></div></section>
 
-      <section class="section-title"><h2>Production snapshot</h2><label class="source-filter">View <select id="source-filter" aria-label="Filter by production line"><option value="">All production lines</option></select></label></section>
+      <section class="section-title"><h2>Production snapshot</h2><form id="source-form" class="source-filter"><label for="source-filter">Production source</label><input id="source-filter" list="source-options" maxlength="128" placeholder="e.g. LINE-01" aria-describedby="source-feedback"><datalist id="source-options"></datalist><button class="button secondary" type="submit">Apply</button><button id="clear-source" class="button secondary" type="button">Clear</button></form></section>
+      <p id="source-feedback" class="filter-feedback" role="status">Showing all production lines</p>
       <section class="metrics" aria-label="Production summary" aria-live="polite">
         <article class="metric primary"><div class="metric-label">Net production <span aria-hidden="true">↗</span></div><div class="metric-value" id="metric-net_total">—</div><p>Finished pieces</p></article>
         <article class="metric"><div class="metric-label">Processed <span aria-hidden="true">✓</span></div><div class="metric-value" id="metric-processed_events">—</div><p>Completed events</p></article>
@@ -38,6 +39,7 @@
         <article class="metric"><div class="metric-label">Unresolved <span aria-hidden="true">⌁</span></div><div class="metric-value" id="metric-unresolved">—</div><p>Waiting for a count</p></article>
         <article class="metric"><div class="metric-label">Duplicates <span aria-hidden="true">▣</span></div><div class="metric-value" id="metric-duplicates">—</div><p>Retries safely recorded</p></article>
         <article class="metric"><div class="metric-label">Conflicts <span aria-hidden="true">!</span></div><div class="metric-value" id="metric-conflicts">—</div><p>Different data, same ID</p></article>
+        <article class="metric rejected"><div class="metric-label">Rejected submissions <span aria-hidden="true">!</span></div><div class="metric-value" id="metric-rejected_submissions">—</div><p>Invalid submission attempts</p></article>
       </section>
 
       <div class="workspace-grid">

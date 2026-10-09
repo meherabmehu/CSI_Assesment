@@ -1,24 +1,25 @@
 {
   "note": "Evidence from an isolated temporary PostgreSQL database and a real local MQTT broker. No production data was seeded.",
-  "checked_at": "2026-10-09T08:21:35.868Z",
+  "checked_at": "2026-10-09T08:35:02.911Z",
   "health": {
     "status": "ok",
     "database": "connected"
   },
   "summary": {
-    "net_total": 240,
-    "processed_events": 7,
-    "pending_ack": 3,
+    "net_total": 690,
+    "processed_events": 8,
+    "pending_ack": 4,
     "unresolved": 1,
     "duplicates": 2,
-    "conflicts": 1
+    "conflicts": 1,
+    "rejected_submissions": 2
   },
   "mqtt_response": {
     "protocol_version": "1.0",
     "candidate_id": "08",
     "challenge_id": "CH-MQTT-001",
     "status": "COMPLETED",
-    "processed_at": "2026-10-09T08:21:28.293Z",
+    "processed_at": "2026-10-09T08:34:54.985Z",
     "results": [
       {
         "event_id": "EV-MQTT",
@@ -32,7 +33,8 @@
       "pending_ack": 3,
       "unresolved": 1,
       "duplicates": 1,
-      "conflicts": 1
+      "conflicts": 1,
+      "rejected_submissions": 1
     }
   },
   "checks": [
@@ -47,6 +49,11 @@
     "Invalid JSON shows a helpful inline error",
     "The source filter loads that line’s actual production and exceptions",
     "Searching events handles an empty result",
+    "COUNT 450 is accepted and COUNT 501 is rejected without increasing production",
+    "The entered source filters summary, pending, exceptions and rejected attempts together",
+    "An unknown source shows zero metrics and a useful empty state",
+    "Typing a source does not change the applied filter during refresh",
+    "Clearing the source restores all production and rejected submissions",
     "390px mobile layout has no page overflow",
     "A stalled submission releases the button and preserves IDs for a safe retry",
     "Backend failure is visible and retained values are labelled as stale",
