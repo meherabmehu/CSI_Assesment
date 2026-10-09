@@ -1,0 +1,53 @@
+{
+  "note": "Evidence from an isolated temporary PostgreSQL database and a real local MQTT broker. No production data was seeded.",
+  "checked_at": "2026-10-09T07:12:22.111Z",
+  "health": {
+    "status": "ok",
+    "database": "connected"
+  },
+  "summary": {
+    "net_total": 240,
+    "processed_events": 7,
+    "pending_ack": 3,
+    "unresolved": 1,
+    "duplicates": 2,
+    "conflicts": 1
+  },
+  "mqtt_response": {
+    "protocol_version": "1.0",
+    "candidate_id": "08",
+    "challenge_id": "CH-MQTT-001",
+    "status": "COMPLETED",
+    "processed_at": "2026-10-09T07:12:14.427Z",
+    "results": [
+      {
+        "event_id": "EV-MQTT",
+        "status": "ACCEPTED",
+        "message": "Production count recorded."
+      }
+    ],
+    "state": {
+      "net_total": 240,
+      "processed_events": 5,
+      "pending_ack": 3,
+      "unresolved": 1,
+      "duplicates": 1,
+      "conflicts": 1
+    }
+  },
+  "checks": [
+    "MQTT challenge travels through a real local broker into PostgreSQL",
+    "Desktop dashboard displays real totals, employee ID 08 and correlated MQTT status",
+    "Submitting a COUNT updates the dashboard from the backend",
+    "Submitting the same event twice shows DUPLICATE without extra production",
+    "The correction example reverses the submitted count",
+    "Selecting and acknowledging an event reduces pending review",
+    "Exceptions show pending references, rejected submissions and conflicts",
+    "Invalid JSON shows a helpful inline error",
+    "The source filter loads that line’s actual production and exceptions",
+    "Searching events handles an empty result",
+    "390px mobile layout has no page overflow",
+    "Backend failure is visible and retained values are labelled as stale",
+    "No browser JavaScript errors"
+  ]
+}

@@ -52,6 +52,14 @@ test('conflicting data preserves the original event and total', async () => {
   assert.equal((await summary()).conflicts, 1);
 });
 
+test('ISO fractional timestamps retain precision when classifying retries', async () => {
+  const event = { ...count(), event_time: '2026-10-09T10:30:00.123456Z' };
+  await send([event]);
+  const equivalent = { ...event, event_time: '2026-10-09T16:30:00.123456000+06:00' };
+  assert.equal((await send([equivalent])).results[0].status, 'DUPLICATE');
+  assert.equal((await send([{ ...event, event_time: '2026-10-09T10:30:00.123457Z' }])).results[0].status, 'CONFLICT');
+});
+
 test('event IDs are globally unique and conflicts filter by submitted source', async () => {
   await send([count(), count('EV-101', 5, 'LINE-02')]);
   const line2 = await getState(db.pool, 'summary', 'LINE-02');

@@ -151,7 +151,7 @@ npm test
 npm run test:browser
 ```
 
-The automated suite has **34 tests**, including the five required cases, races, partial batches, transactions, API errors, real local MQTT transport, replay, heartbeat and broker restart. MQTT tests use a disposable Aedes broker and do not contact the assessment broker. Every test database has a generated `cis_assessment_test_*` name and is dropped after testing; the main project database is never truncated.
+The automated suite has **35 tests**, including the five required cases, timestamp precision, races, partial batches, transactions, API errors, real local MQTT transport, replay, heartbeat and broker restart. MQTT tests use a disposable Aedes broker and do not contact the assessment broker. Every test database has a generated `cis_assessment_test_*` name and is dropped after testing; the main project database is never truncated.
 
 Browser verification covers 13 end-to-end checks using a disposable PostgreSQL database, a real local MQTT broker and headless Edge/Chromium. On Windows it uses installed Edge. Otherwise install Chromium with `npx playwright install chromium`, or set `BROWSER_PATH` to a Chromium-compatible executable. It generates desktop/mobile/exception/API/MQTT screenshots and `artifacts/browser-verification.json`. Screenshot values are isolated test fixtures, not factory production.
 

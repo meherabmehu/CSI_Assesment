@@ -31,7 +31,7 @@ This is a curated record of the relevant requests and implementation decisions f
 - One backend deployment, one PostgreSQL database, shared COUNT/VOID processing for REST and MQTT.
 - Persistent logical events, attempts, review markers, MQTT challenge responses and audit trail.
 - Responsive dashboard showing real backend values, inline errors and live MQTT status.
-- 34 automated tests passed, including real local MQTT transport/heartbeat/reconnect and concurrent PostgreSQL writes.
+- 35 automated tests passed, including timestamp precision, real local MQTT transport/heartbeat/reconnect and concurrent PostgreSQL writes.
 - 13 headless-browser checks passed, including mobile width, COUNT, duplicate, VOID, ACK, exceptions and outage handling.
 - Genuine progress commits record the implementation stages. Consult `git log --oneline` and `artifacts/` for reproducible evidence.
 - Remaining external submission steps are described in `RUN_GUIDE_BN.md`; no Google Form URL was supplied.

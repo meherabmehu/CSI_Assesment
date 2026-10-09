@@ -14,7 +14,7 @@ export function canonicalJson(value) {
 
 export function parseTimestamp(value) {
   if (typeof value !== 'string') return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$/.exec(value);
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-]\d{2}:\d{2})$/.exec(value);
   if (!match) return null;
   const [year, month, day, hour, minute, second] = match.slice(1, 7).map(Number);
   const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
@@ -26,5 +26,9 @@ export function parseTimestamp(value) {
     if (offsetHour > 23 || offsetMinute > 59) return null;
   }
   const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : null;
+  if (!Number.isFinite(timestamp)) return null;
+  // Preserve sub-millisecond precision in retry identity, even though JS Date
+  // and dashboard display times are millisecond based.
+  const fraction = (value.match(/\.(\d+)/)?.[1] || '').padEnd(9, '0');
+  return new Date(timestamp).toISOString().replace(/\.\d{3}Z$/, `.${fraction}Z`);
 }

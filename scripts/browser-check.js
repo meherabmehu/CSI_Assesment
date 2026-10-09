@@ -62,6 +62,9 @@ try {
   assert.equal(await page.locator('#last-challenge-id').textContent(), 'CH-MQTT-001');
   pass('Desktop dashboard displays real totals, employee ID 08 and correlated MQTT status');
   await page.screenshot({ path: artifactDir + 'dashboard-desktop.png', fullPage: true });
+  await page.locator('#response-details summary').click();
+  await page.locator('.detail-column').screenshot({ path: artifactDir + 'mqtt-response.png' });
+  await page.locator('#response-details summary').click();
 
   await page.getByRole('button', { name: 'Count +5', exact: true }).click();
   await page.locator('#submit-button').click();
@@ -104,6 +107,10 @@ try {
   await page.locator('#event-search').fill('');
   pass('Searching events handles an empty result');
 
+  await page.getByRole('button', { name: 'Count +5', exact: true }).click();
+  await page.locator('#event-input').blur();
+  await page.waitForFunction(() => document.getElementById('toast').hidden);
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => window.scrollTo(0, 0));
   const widths = await page.evaluate(() => ({ page: document.documentElement.scrollWidth, viewport: window.innerWidth }));
@@ -118,6 +125,11 @@ try {
   pass('Backend failure is visible and retained values are labelled as stale');
   assert.deepEqual(errors, []);
   pass('No browser JavaScript errors');
+
+  const apiPage = await context.newPage();
+  await apiPage.goto(base + '/api/state');
+  await apiPage.screenshot({ path: artifactDir + 'rest-api-response.png' });
+  await apiPage.close();
 
   const apiEvidence = {
     note: 'Evidence from an isolated temporary PostgreSQL database and a real local MQTT broker. No production data was seeded.',

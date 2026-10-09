@@ -99,4 +99,4 @@ A credible migration path is to extract the events service first while keeping o
 
 ## Verification
 
-34 automated tests exercise the required five cases plus normalization, conflicts, source filtering, invalid input, concurrent retries/corrections, rollback, committed callbacks, restart reads, API semantics, real local MQTT response delivery, heartbeat and broker reconnect. 13 browser checks cover desktop/mobile display, submission, duplicate, correction, ACK, exceptions, source filtering, invalid JSON, empty search and backend failure. Screenshots and machine-readable evidence are in `artifacts/`.
+35 automated tests exercise the required five cases plus normalization, fractional timestamp precision, conflicts, source filtering, invalid input, concurrent retries/corrections, rollback, committed callbacks, restart reads, API semantics, real local MQTT response delivery, heartbeat and broker reconnect. 13 browser checks cover desktop/mobile display, submission, duplicate, correction, ACK, exceptions, source filtering, invalid JSON, empty search and backend failure. Screenshots and machine-readable evidence are in `artifacts/`.
