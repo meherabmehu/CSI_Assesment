@@ -1,0 +1,29 @@
+{
+  "name": "northbridge-production-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Production event dashboard with PostgreSQL history and MQTT device integration",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:init": "node scripts/migrate.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
+    "test:browser": "node scripts/browser-check.js",
+    "simulate": "node scripts/simulate-mqtt.js",
+    "package": "node scripts/package-source.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.6",
+    "express": "^5.2.1",
+    "mqtt": "^5.16.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "aedes": "^1.2.0",
+    "playwright": "^1.64.0"
+  }
+}

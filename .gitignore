@@ -3,3 +3,9 @@
 !.env.example
 .pdf-tools/
 .pdf-review/
+node_modules/
+artifacts/source.zip
+artifacts/*.log
+playwright-report/
+test-results/
+*.tmp
