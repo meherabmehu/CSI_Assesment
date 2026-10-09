@@ -52,6 +52,7 @@ export function createMqttWorker(pool, settings) {
       catch { response = failureResponse(body, settings.candidateId, 'INTERNAL_ERROR', 'The challenge could not be processed.'); }
     }
     monitor.last_response_status = response.status;
+    monitor.last_response_body = response;
     monitor.last_error = response.status === 'FAILED' ? `${response.error_code}: ${response.message}` : null;
     await publishResponse(response);
   }
