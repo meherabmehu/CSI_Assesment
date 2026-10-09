@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { getState } from './service.js';
+import { validIdentifier } from '../../shared/json.js';
 
 export function readSource(query) {
   if (query.source_id === undefined) return null;
-  if (typeof query.source_id !== 'string' || !query.source_id.trim() || query.source_id.trim().length > 128) {
+  if (!validIdentifier(query.source_id)) {
     const error = new Error('source_id must be a non-empty string, up to 128 characters.');
     error.status = 400;
     throw error;

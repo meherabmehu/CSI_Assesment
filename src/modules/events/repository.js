@@ -21,11 +21,12 @@ export async function insertEvent(client, event, status, reason = null) {
 }
 
 export async function recordAttempt(client, raw, result, context) {
-  const usefulString = (value) => typeof value === 'string' && value.trim() ? value.trim() : null;
+  const usefulString = (value) => validIdentifier(value) ? value.trim() : null;
   await client.query(`
-    INSERT INTO submission_attempts(raw_payload, source_id, event_id, classification, error, transport, challenge_id)
-    VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-  [JSON.stringify(raw), usefulString(raw?.source_id), usefulString(raw?.event_id), result.status,
+    INSERT INTO submission_attempts(raw_payload, source_id, event_id, classification, error, transport, challenge_id, raw_payload_text)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+  [JSON.stringify(jsonProjection(raw)), usefulString(raw?.source_id), usefulString(raw?.event_id), result.status,
     ['REJECTED', 'CONFLICT'].includes(result.status) ? result.message : null,
-    context.transport || 'REST', context.challengeId || null]);
+    context.transport || 'REST', context.challengeId || null, serializeJson(raw)]);
 }
+import { validIdentifier, serializeJson, jsonProjection } from '../../shared/json.js';

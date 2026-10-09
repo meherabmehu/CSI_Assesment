@@ -31,7 +31,14 @@ This is a curated record of the relevant requests and implementation decisions f
 - One backend deployment, one PostgreSQL database, shared COUNT/VOID processing for REST and MQTT.
 - Persistent logical events, attempts, review markers, MQTT challenge responses and audit trail.
 - Responsive dashboard showing real backend values, inline errors and live MQTT status.
-- 35 automated tests passed, including timestamp precision, real local MQTT transport/heartbeat/reconnect and concurrent PostgreSQL writes.
-- 13 headless-browser checks passed, including mobile width, COUNT, duplicate, VOID, ACK, exceptions and outage handling.
+- The initial delivery passed 35 automated tests and 13 browser checks. A subsequent user-requested bug audit added regression coverage: the current version passes 51 automated tests and 15 browser checks.
 - Genuine progress commits record the implementation stages. Consult `git log --oneline` and `artifacts/` for reproducible evidence.
 - Remaining external submission steps are described in `RUN_GUIDE_BN.md`; no Google Form URL was supplied.
+
+## Subsequent bug review
+
+User: “okay all bug dekho valo kore bujho..kothao kono bug thakle fix koro bug khujo valo kore”
+
+User steering: “do it fast”
+
+Assistant summary: Reproduced failed regressions for legacy timestamp retries, unsupported Unicode batch rollback, candidate replay bypass and challenge ID reservation. Fixed those failures, MQTT telemetry/recovery/shutdown, startup cleanup, correction example identity, client timeouts and simulator promise handling. Verified 51 automated tests and 15 browser workflows using only local brokers and disposable databases. External broker authorization remains separate from the bug audit.

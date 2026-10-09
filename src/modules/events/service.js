@@ -1,5 +1,6 @@
 import { withTransaction } from '../../shared/db.js';
 import { canonicalJson } from '../../shared/contracts.js';
+import { validIdentifier } from '../../shared/json.js';
 import { notifyChanges } from '../../shared/domain-events.js';
 import { validateEvent } from './validation.js';
 import { findEvent, recordAttempt } from './repository.js';
@@ -12,11 +13,12 @@ export async function processEventsInTransaction(client, items, context = {}, no
     const { event, error } = validateEvent(raw);
     let result;
     if (error) {
-      result = { event_id: typeof raw?.event_id === 'string' ? raw.event_id : null, status: 'REJECTED', message: error };
+      result = { event_id: validIdentifier(raw?.event_id) ? raw.event_id.trim() : null, status: 'REJECTED', message: error };
     } else {
       const original = await findEvent(client, event.event_id);
       if (original) {
-        const identical = canonicalJson(original.normalized_payload) === canonicalJson(event);
+        const stored = validateEvent(original.normalized_payload).event;
+        const identical = stored && canonicalJson(stored) === canonicalJson(event);
         result = {
           event_id: event.event_id,
           status: identical ? 'DUPLICATE' : 'CONFLICT',

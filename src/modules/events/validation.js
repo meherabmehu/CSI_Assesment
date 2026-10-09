@@ -1,13 +1,12 @@
 import { isObject, parseTimestamp } from '../../shared/contracts.js';
-
-function identifier(value) {
-  return typeof value === 'string' && value.trim().length > 0 && value.trim().length <= 128;
-}
+import { inspectJson, validIdentifier } from '../../shared/json.js';
 
 export function validateEvent(input) {
   if (!isObject(input)) return { error: 'Each event must be a JSON object.' };
-  if (!identifier(input.source_id)) return { error: 'source_id must be a non-empty string, up to 128 characters.' };
-  if (!identifier(input.event_id)) return { error: 'event_id must be a non-empty string, up to 128 characters.' };
+  const jsonError = inspectJson(input);
+  if (jsonError) return { error: jsonError };
+  if (!validIdentifier(input.source_id)) return { error: 'source_id must be a non-empty string, up to 128 characters.' };
+  if (!validIdentifier(input.event_id)) return { error: 'event_id must be a non-empty string, up to 128 characters.' };
   if (!['COUNT', 'VOID'].includes(input.type)) return { error: 'type must be exactly COUNT or VOID.' };
   const eventTime = parseTimestamp(input.event_time);
   if (!eventTime) return { error: 'event_time must be a valid ISO 8601 timestamp with a timezone.' };
@@ -19,7 +18,7 @@ export function validateEvent(input) {
     if (input.target_event_id != null) return { error: 'COUNT must not specify target_event_id.' };
   } else {
     if (input.quantity != null) return { error: 'VOID quantity must be null or omitted.' };
-    if (!identifier(input.target_event_id)) return { error: 'VOID requires a non-empty target_event_id.' };
+    if (!validIdentifier(input.target_event_id)) return { error: 'VOID requires a non-empty target_event_id.' };
     if (input.event_id.trim() === input.target_event_id.trim()) return { error: 'A VOID cannot target itself.' };
   }
 

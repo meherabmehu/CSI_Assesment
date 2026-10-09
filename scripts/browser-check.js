@@ -74,7 +74,13 @@ try {
   await page.waitForFunction(() => document.querySelector('#submission-results .badge')?.textContent === 'DUPLICATE');
   assert.equal(await page.locator('#metric-net_total').textContent(), '245');
   pass('Submitting the same event twice shows DUPLICATE without extra production');
+  const acceptedCount = JSON.parse(await page.locator('#event-input').inputValue());
+  await page.getByRole('button', { name: 'Count +5', exact: true }).click();
   await page.getByRole('button', { name: 'Correction', exact: true }).click();
+  const correction = JSON.parse(await page.locator('#event-input').inputValue());
+  assert.equal(correction.target_event_id, acceptedCount.event_id);
+  assert.equal(correction.source_id, acceptedCount.source_id);
+  pass('Generating an unsent example does not replace the real correction target');
   await page.locator('#submit-button').click();
   await page.waitForFunction(() => document.getElementById('metric-net_total').textContent === '240');
   pass('The correction example reverses the submitted count');
@@ -94,6 +100,7 @@ try {
   await page.locator('#event-input').fill('{broken');
   await page.locator('#submit-button').click();
   assert.ok((await page.locator('#submit-message').textContent()).includes('valid JSON'));
+  assert.equal(await page.locator('#submission-results').textContent(), '');
   pass('Invalid JSON shows a helpful inline error');
   await page.locator('#source-filter').selectOption('LINE-02');
   await page.waitForFunction(() => document.getElementById('metric-net_total').textContent === '85');
@@ -117,6 +124,17 @@ try {
   assert.ok(widths.page <= widths.viewport, `Mobile overflow: ${widths.page} > ${widths.viewport}`);
   await page.screenshot({ path: artifactDir + 'dashboard-mobile.png', fullPage: true });
   pass('390px mobile layout has no page overflow');
+
+  await page.clock.install();
+  await page.route('**/api/events', () => {});
+  const retainedInput = await page.locator('#event-input').inputValue();
+  await page.locator('#submit-button').click();
+  await page.clock.fastForward(16000);
+  await page.waitForFunction(() => !document.getElementById('submit-button').disabled);
+  assert.ok((await page.locator('#submit-message').textContent()).includes('outcome is unknown'));
+  assert.equal(await page.locator('#event-input').inputValue(), retainedInput);
+  await page.unroute('**/api/events');
+  pass('A stalled submission releases the button and preserves IDs for a safe retry');
 
   await page.route('**/api/dashboard*', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Test backend outage' }) }));
   await page.locator('#refresh').click();

@@ -40,7 +40,7 @@ export async function getExceptions(client, sourceId = null) {
 }
 
 export async function getHistory(client, sourceId = null) {
-  const { rows } = await client.query(`SELECT id, event_id, source_id, raw_payload, classification AS status,
+  const { rows } = await client.query(`SELECT id, event_id, source_id, raw_payload, raw_payload_text, classification AS status,
     error AS reason, transport, challenge_id, received_at FROM submission_attempts
     WHERE ($1::text IS NULL OR source_id = $1) ORDER BY id DESC LIMIT 200`, [sourceId]);
   return rows;

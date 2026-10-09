@@ -1,10 +1,13 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { createPool, withTransaction } from '../src/shared/db.js';
 
 export async function migrate(pool) {
-  const sql = await readFile(new URL('../migrations/001_initial.sql', import.meta.url), 'utf8');
-  await withTransaction(pool, (client) => client.query(sql));
+  const directory = new URL('../migrations/', import.meta.url);
+  const files = (await readdir(directory)).filter((name) => /^\d+_.+\.sql$/.test(name)).sort();
+  await withTransaction(pool, async (client) => {
+    for (const name of files) await client.query(await readFile(new URL(name, directory), 'utf8'));
+  });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

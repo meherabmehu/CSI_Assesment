@@ -5,11 +5,7 @@ export function isObject(value) {
 }
 
 export function canonicalJson(value) {
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  if (isObject(value)) {
-    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
-  }
-  return JSON.stringify(value);
+  return serializeJson(value, { sortKeys: true });
 }
 
 export function parseTimestamp(value) {
@@ -32,3 +28,4 @@ export function parseTimestamp(value) {
   const fraction = (value.match(/\.(\d+)/)?.[1] || '').padEnd(9, '0');
   return new Date(timestamp).toISOString().replace(/\.\d{3}Z$/, `.${fraction}Z`);
 }
+import { serializeJson } from './json.js';

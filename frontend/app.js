@@ -15,15 +15,6 @@ let toastTimer;
 
 $('today').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-async function api(path, options = {}) {
-  const response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
-  let data;
-  try { data = await response.json(); }
-  catch { throw new Error('The server returned an unreadable response. Please try again.'); }
-  if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
-  return data;
-}
-
 function toast(message) {
   clearTimeout(toastTimer);
   $('toast').textContent = message;
@@ -162,15 +153,15 @@ function example(type) {
   const id = `EV-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const base = { source_id: $('source-filter').value || 'LINE-01', event_id: id, type: 'COUNT', quantity: 5, event_time: new Date().toISOString() };
   let payload;
-  if (type === 'count') { latestCount = base.event_id; payload = base; }
-  else if (type === 'void') payload = { ...base, type: 'VOID', quantity: null, target_event_id: latestCount || 'EV-COUNT-TO-REVERSE' };
+  if (type === 'count') payload = base;
+  else if (type === 'void') payload = { ...base, source_id: latestCount?.source_id || base.source_id,
+    type: 'VOID', quantity: null, target_event_id: latestCount?.event_id || 'EV-COUNT-TO-REVERSE' };
   else {
     const target = { ...base, event_id: `${id}-TARGET`, quantity: 3 };
     payload = [
       { ...base, event_id: `${id}-VOID`, type: 'VOID', quantity: null, target_event_id: target.event_id },
       target, base, { ...base }, { ...base, event_id: `${id}-INVALID`, quantity: -1 },
     ];
-    latestCount = base.event_id;
   }
   $('event-input').value = JSON.stringify(payload, null, 2);
   $('submit-message').hidden = true;
@@ -179,6 +170,7 @@ function example(type) {
 
 $('submit-button').addEventListener('click', async () => {
   if (submitting) return;
+  $('submission-results').replaceChildren();
   let body;
   try { body = JSON.parse($('event-input').value); }
   catch {
@@ -197,7 +189,10 @@ $('submit-button').addEventListener('click', async () => {
     $('submission-results').innerHTML = data.results.map((item) => `<div class="result-row">${badge(item.status)}<div><strong>${escape(item.event_id || 'Invalid item')}</strong><small>${escape(item.message)}</small></div></div>`).join('');
     const submitted = Array.isArray(body) ? body : [body];
     for (let i = 0; i < data.results.length; i++) {
-      if (data.results[i].status === 'ACCEPTED' && submitted[i]?.type === 'COUNT') latestCount = data.results[i].event_id;
+      if (['ACCEPTED', 'DUPLICATE'].includes(data.results[i].status) && submitted[i]?.type === 'COUNT') {
+        latestCount = { event_id: data.results[i].event_id, source_id: submitted[i].source_id.trim() };
+      } else if (data.results[i].status === 'ACCEPTED' && submitted[i]?.type === 'VOID'
+          && submitted[i].target_event_id?.trim() === latestCount?.event_id) latestCount = null;
     }
     if (!data.results.length) {
       $('submit-message').className = 'notice';
@@ -248,3 +243,4 @@ example('count');
 refresh();
 setInterval(() => { if (!document.hidden) refresh(); }, 5000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh({ manual: true }); });
+import { api } from './api.js';

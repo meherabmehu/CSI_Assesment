@@ -3,8 +3,8 @@
 Verified on 9 October 2026, Asia/Dhaka.
 
 - `npm run db:create`: project database and tables ready on PostgreSQL 16.
-- `npm test`: **35 passed, 0 failed**, including PostgreSQL concurrency, VOID-before-COUNT, safe ACK, transaction rollback, MQTT replay, actual local broker delivery, 30-second heartbeat and broker restart/resubscribe.
-- `npm run test:browser`: **13 workflow checks passed**; no JavaScript errors, desktop and 390px mobile layouts verified.
+- `npm test`: **51 passed, 0 failed**, including PostgreSQL concurrency, VOID-before-COUNT, safe ACK, transaction rollback, legacy retry compatibility, malformed input isolation, candidate/recovery checks, shutdown/startup cleanup, MQTT replay, actual local broker delivery, 30-second heartbeat and broker restart/resubscribe.
+- `npm run test:browser`: **15 workflow checks passed**; no JavaScript errors, desktop/390px mobile layouts, correction targeting and stalled submissions verified.
 - Main application health: local backend and PostgreSQL respond; no test fixtures were inserted into the main database.
 - Candidate/employee identity: **08**, explicitly confirmed by the user.
 

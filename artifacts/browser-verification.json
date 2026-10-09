@@ -1,6 +1,6 @@
 {
   "note": "Evidence from an isolated temporary PostgreSQL database and a real local MQTT broker. No production data was seeded.",
-  "checked_at": "2026-10-09T07:12:22.111Z",
+  "checked_at": "2026-10-09T08:21:35.868Z",
   "health": {
     "status": "ok",
     "database": "connected"
@@ -18,7 +18,7 @@
     "candidate_id": "08",
     "challenge_id": "CH-MQTT-001",
     "status": "COMPLETED",
-    "processed_at": "2026-10-09T07:12:14.427Z",
+    "processed_at": "2026-10-09T08:21:28.293Z",
     "results": [
       {
         "event_id": "EV-MQTT",
@@ -40,6 +40,7 @@
     "Desktop dashboard displays real totals, employee ID 08 and correlated MQTT status",
     "Submitting a COUNT updates the dashboard from the backend",
     "Submitting the same event twice shows DUPLICATE without extra production",
+    "Generating an unsent example does not replace the real correction target",
     "The correction example reverses the submitted count",
     "Selecting and acknowledging an event reduces pending review",
     "Exceptions show pending references, rejected submissions and conflicts",
@@ -47,6 +48,7 @@
     "The source filter loads that line’s actual production and exceptions",
     "Searching events handles an empty result",
     "390px mobile layout has no page overflow",
+    "A stalled submission releases the button and preserves IDs for a safe retry",
     "Backend failure is visible and retained values are labelled as stale",
     "No browser JavaScript errors"
   ]

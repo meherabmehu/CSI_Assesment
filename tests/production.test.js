@@ -60,6 +60,45 @@ test('ISO fractional timestamps retain precision when classifying retries', asyn
   assert.equal((await send([{ ...event, event_time: '2026-10-09T10:30:00.123457Z' }])).results[0].status, 'CONFLICT');
 });
 
+test('events stored with the older millisecond normalization remain duplicate-safe after upgrades', async () => {
+  await send([count()]);
+  await db.pool.query("UPDATE production_events SET normalized_payload = jsonb_set(normalized_payload, '{event_time}', '\"2026-10-09T10:30:00.000Z\"') WHERE event_id = 'EV-101'");
+  assert.equal((await send([count()])).results[0].status, 'DUPLICATE');
+  assert.equal((await summary()).net_total, 5);
+});
+
+test('a NUL character in an invalid item cannot roll back valid batch siblings', async () => {
+  const result = await send([count('GOOD-A'), count('BAD\u0000ID'), count('GOOD-B')]);
+  assert.deepEqual(result.results.map((item) => item.status), ['ACCEPTED', 'REJECTED', 'ACCEPTED']);
+  assert.equal((await summary()).net_total, 10);
+  assert.equal((await db.pool.query('SELECT count(*) FROM submission_attempts')).rows[0].count, '3');
+});
+
+test('unsupported JSON text in metadata is rejected and its original submission is preserved', async () => {
+  const raw = { ...count('BAD-TEXT'), note: '\u0000\ud800' };
+  const result = await send([raw, count('GOOD')]);
+  assert.deepEqual(result.results.map((item) => item.status), ['REJECTED', 'ACCEPTED']);
+  const row = (await db.pool.query('SELECT raw_payload_text FROM submission_attempts WHERE classification = $1', ['REJECTED'])).rows[0];
+  assert.equal(row.raw_payload_text, JSON.stringify(raw));
+});
+
+test('deeply nested rejected metadata remains loggable without aborting the batch', async () => {
+  let note = 'deep';
+  for (let i = 0; i < 200; i++) note = { child: note };
+  const raw = { ...count('DEEP'), note };
+  const result = await send([raw, count('GOOD')]);
+  assert.deepEqual(result.results.map((item) => item.status), ['REJECTED', 'ACCEPTED']);
+  const row = (await db.pool.query('SELECT raw_payload_text FROM submission_attempts WHERE event_id = $1', ['DEEP'])).rows[0];
+  assert.equal(row.raw_payload_text, JSON.stringify(raw));
+});
+
+test('oversized source IDs cannot break the attempt-history index or valid siblings', async () => {
+  const source = Array.from({ length: 300 }, (_, i) => `${i}-${Math.random().toString(36)}`).join('');
+  const result = await send([count('LONG-SOURCE', 5, source), count('GOOD')]);
+  assert.deepEqual(result.results.map((item) => item.status), ['REJECTED', 'ACCEPTED']);
+  assert.equal((await summary()).net_total, 5);
+});
+
 test('event IDs are globally unique and conflicts filter by submitted source', async () => {
   await send([count(), count('EV-101', 5, 'LINE-02')]);
   const line2 = await getState(db.pool, 'summary', 'LINE-02');
@@ -237,6 +276,24 @@ test('expired and mismatched challenges are rejected before processing events', 
   assert.equal((await summary()).net_total, 0);
 });
 
+test('a stored MQTT response cannot bypass candidate validation after configuration changes', async () => {
+  const body = challenge();
+  await handleChallenge(db.pool, body, '08');
+  const response = await handleChallenge(db.pool, body, '09');
+  assert.equal(response.status, 'FAILED');
+  assert.equal(response.error_code, 'CANDIDATE_MISMATCH');
+  assert.equal(response.candidate_id, '09');
+});
+
+test('a mismatched candidate cannot reserve a legitimate challenge ID', async () => {
+  const body = challenge();
+  const wrong = await handleChallenge(db.pool, { ...body, candidate_id: 'OTHER' }, '08');
+  assert.equal(wrong.error_code, 'CANDIDATE_MISMATCH');
+  const legitimate = await handleChallenge(db.pool, body, '08');
+  assert.equal(legitimate.status, 'COMPLETED');
+  assert.equal(legitimate.state.net_total, 5);
+});
+
 test('MQTT can complete while an individual event is rejected', async () => {
   const response = await handleChallenge(db.pool, challenge([count('BAD', -1), count()]), '08');
   assert.equal(response.status, 'COMPLETED');
@@ -264,6 +321,8 @@ test('REST handles malformed JSON and invalid query/ACK input without exposing i
   assert.equal((await fetch(base + '/api/state?view=invalid')).status, 400);
   assert.equal((await fetch(base + '/api/state?source_id=')).status, 400);
   assert.equal((await post('/api/ack', { event_ids: [] })).status, 400);
+  assert.equal((await post('/api/ack', { event_ids: ['BAD\u0000ID'] })).status, 400);
+  assert.equal((await fetch(base + '/api/state?source_id=BAD%00ID')).status, 400);
 });
 
 test('dashboard and health endpoints return real database data', async () => {
