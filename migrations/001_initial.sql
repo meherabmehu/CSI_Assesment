@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS production_sources (
 );
 
 CREATE TABLE IF NOT EXISTS production_events (
+    ingestion_order bigserial UNIQUE,
     event_id text PRIMARY KEY,
     source_id text NOT NULL REFERENCES production_sources(source_id),
     type text NOT NULL CHECK (type IN ('COUNT', 'VOID')),
@@ -22,6 +23,8 @@ CREATE TABLE IF NOT EXISTS production_events (
         OR (type = 'VOID' AND quantity IS NULL AND target_event_id IS NOT NULL)),
     CHECK (type <> 'VOID' OR event_id <> target_event_id)
 );
+
+ALTER TABLE production_events ADD COLUMN IF NOT EXISTS ingestion_order bigserial;
 
 -- A pending VOID deliberately has no target foreign key: its COUNT may arrive later.
 CREATE UNIQUE INDEX IF NOT EXISTS one_completed_void_per_count

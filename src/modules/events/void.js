@@ -32,7 +32,7 @@ export async function resolvePendingVoids(client, targetId, notifications) {
   const target = await findEvent(client, targetId);
   if (!target) return;
   const { rows } = await client.query(
-    "SELECT * FROM production_events WHERE status = 'PENDING_REFERENCE' AND target_event_id = $1 ORDER BY received_at, event_id",
+    "SELECT * FROM production_events WHERE status = 'PENDING_REFERENCE' AND target_event_id = $1 ORDER BY ingestion_order",
     [targetId],
   );
   for (const pending of rows) {
