@@ -181,6 +181,8 @@ Library references: [Express API](https://expressjs.com/en/5x/api/), [node-postg
 
 ## Change request
 
+For hosted PostgreSQL configuration and Render startup, see [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md). The backend accepts `DATABASE_URL` or individual `PG*` settings and automatically binds to `0.0.0.0` on Render.
+
 On this Windows laptop, double-click `START_LOCAL.cmd` to start the app and a loopback MQTT broker and open the dashboard. Double-click `STOP_LOCAL.cmd` to stop that launcher-managed instance. PostgreSQL data is retained. Run `npm run simulate:local` for a real local MQTT challenge/response demo. Logs and the managed process ID are stored in ignored `.runtime/`. This mode does not contact the external assessment broker. The usual `npm start` still uses the configured `.env` broker.
 
 COUNT accepts integer quantities from 1 to 500. The summary includes `rejected_submissions`, counted from PostgreSQL submission attempts with status REJECTED. Enter a source in the dashboard and choose Apply, or Clear to view all sources. See [CHANGE_REQUEST.md](CHANGE_REQUEST.md) for the changed functions and demo evidence.

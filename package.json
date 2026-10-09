@@ -23,7 +23,8 @@
     "dotenv": "^18.0.6",
     "express": "^5.2.1",
     "mqtt": "^5.16.0",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "pg-connection-string": "^2.14.1"
   },
   "devDependencies": {
     "aedes": "^1.2.0",

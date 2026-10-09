@@ -4,18 +4,24 @@ import { migrate } from '../scripts/migrate.js';
 import { createApp } from './app.js';
 import { createMqttWorker } from './modules/mqtt/worker.js';
 import { once } from 'node:events';
+import { safeError } from './shared/errors.js';
 
 const pool = createPool();
 let worker;
 let server;
+let stage = 'database connectivity';
 try {
+  await pool.query('SELECT 1');
+  stage = 'database migrations';
   await migrate(pool);
+  stage = 'MQTT configuration';
   worker = createMqttWorker(pool, config.mqtt);
   const app = createApp(pool, worker);
-  server = app.listen(config.port, config.host, () => {
-    console.log(`NorthBridge dashboard: http://${config.host}:${config.port}`);
-  });
+  stage = 'HTTP binding';
+  server = app.listen(config.port, config.host);
   await once(server, 'listening');
+  console.log(`NorthBridge dashboard: http://${config.host}:${server.address().port}`);
+  stage = 'MQTT startup';
   worker.start();
   let shuttingDown = false;
   async function shutdown() {
@@ -30,8 +36,8 @@ try {
   process.once('SIGINT', stopSafely);
   process.once('SIGTERM', stopSafely);
   server.on('error', (error) => { console.error('Server error:', error.code); stopSafely(); });
-} catch {
-  console.error('Startup failed. Check PostgreSQL and your local .env configuration.');
+} catch (error) {
+  console.error(`Startup failed during ${stage}:`, safeError(error));
   if (server) server.close(() => {});
   if (worker) await worker.stop().catch(() => {});
   await pool.end();

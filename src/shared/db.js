@@ -1,9 +1,10 @@
 import pg from 'pg';
 import { config } from '../config.js';
+import { safeError } from './errors.js';
 
 export function createPool(overrides = {}) {
   const pool = new pg.Pool({ ...config.database, ...overrides });
-  pool.on('error', () => console.error('An idle database connection failed.'));
+  pool.on('error', (error) => console.error('Idle database connection failed:', safeError(error)));
   return pool;
 }
 

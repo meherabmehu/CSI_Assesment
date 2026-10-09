@@ -6,7 +6,14 @@ export async function migrate(pool) {
   const directory = new URL('../migrations/', import.meta.url);
   const files = (await readdir(directory)).filter((name) => /^\d+_.+\.sql$/.test(name)).sort();
   await withTransaction(pool, async (client) => {
-    for (const name of files) await client.query(await readFile(new URL(name, directory), 'utf8'));
+    for (const name of files) {
+      try { await client.query(await readFile(new URL(name, directory), 'utf8')); }
+      catch (error) {
+        // Filename is application-controlled; SQL and driver details can contain private data.
+        console.error(`Migration failed: ${name}`);
+        throw error;
+      }
+    }
   });
 }
 
