@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123e36">
+  <title>NorthBridge · Production Desk</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="NorthBridge home"><span class="brand-mark">N<span>↗</span></span><span>NorthBridge<small>PRODUCTION DESK</small></span></a>
+    <div class="workspace-label">WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <a class="nav-link active" href="#overview"><span aria-hidden="true">▦</span><span>Overview</span></a>
+      <a class="nav-link" href="#event-panel"><span aria-hidden="true">≡</span><span>Event activity</span></a>
+      <a class="nav-link" href="#device-panel"><span aria-hidden="true">⌁</span><span>Device connection</span></a>
+      <a class="nav-link" href="#submit-panel"><span aria-hidden="true">＋</span><span>Submit an event</span></a>
+    </nav>
+    <div class="sidebar-note"><span class="small-dot"></span><div>One reliable record.<small>From the floor to your desk.</small></div></div>
+    <div class="sidebar-footer"><div class="avatar">NB</div><div>NorthBridge Garments<small>Factory operations</small></div></div>
+  </aside>
+
+  <main id="overview">
+    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong>Production overview</strong></div><div class="topbar-right"><span id="today"></span><span class="profile">S</span></div></header>
+    <div class="page-content">
+      <section class="page-heading"><div><div class="eyebrow">THE FACTORY, AT A GLANCE</div><h1>Production overview</h1><p>A clear picture of every count, correction and review.</p></div><button id="refresh" class="button secondary"><span aria-hidden="true">↻</span> Refresh</button></section>
+      <div id="connection-error" class="notice error" role="alert" hidden></div>
+      <section class="overview-banner"><div><span class="banner-label"><span class="small-dot"></span> LIVE OPERATIONS</span><h2>Good decisions start with a reliable count.</h2><p>Track production across your floor. Keep every change in view.</p></div><div class="banner-detail"><span class="banner-icon" aria-hidden="true">▥</span><span id="source-count">— production lines</span><small id="updated">Waiting for your first update</small></div></section>
+
+      <section class="section-title"><h2>Production snapshot</h2><label class="source-filter">View <select id="source-filter" aria-label="Filter by production line"><option value="">All production lines</option></select></label></section>
+      <section class="metrics" aria-label="Production summary" aria-live="polite">
+        <article class="metric primary"><div class="metric-label">Net production <span aria-hidden="true">↗</span></div><div class="metric-value" id="metric-net_total">—</div><p>Finished pieces</p></article>
+        <article class="metric"><div class="metric-label">Processed <span aria-hidden="true">✓</span></div><div class="metric-value" id="metric-processed_events">—</div><p>Completed events</p></article>
+        <article class="metric"><div class="metric-label">Awaiting review <span aria-hidden="true">◷</span></div><div class="metric-value" id="metric-pending_ack">—</div><p>Ready to acknowledge</p></article>
+        <article class="metric"><div class="metric-label">Unresolved <span aria-hidden="true">⌁</span></div><div class="metric-value" id="metric-unresolved">—</div><p>Waiting for a count</p></article>
+        <article class="metric"><div class="metric-label">Duplicates <span aria-hidden="true">▣</span></div><div class="metric-value" id="metric-duplicates">—</div><p>Retries safely recorded</p></article>
+        <article class="metric"><div class="metric-label">Conflicts <span aria-hidden="true">!</span></div><div class="metric-value" id="metric-conflicts">—</div><p>Different data, same ID</p></article>
+      </section>
+
+      <div class="workspace-grid">
+        <div class="main-column">
+          <section class="panel" id="event-panel">
+            <div class="panel-heading"><div><h2>Event activity</h2><p>Review the floor. Keep the history.</p></div><span class="live-pill"><span class="small-dot"></span> Live data</span></div>
+            <div class="table-toolbar"><div class="tabs" role="tablist" aria-label="Event views"><button class="tab active" id="tab-pending" role="tab" aria-selected="true" aria-controls="event-table-panel" data-view="pending">Pending review <span id="pending-badge">0</span></button><button class="tab" id="tab-exceptions" role="tab" aria-selected="false" aria-controls="event-table-panel" data-view="exceptions">Exceptions <span id="exceptions-badge">0</span></button><button class="tab" id="tab-history" role="tab" aria-selected="false" aria-controls="event-table-panel" data-view="history">History</button></div><input type="search" id="event-search" placeholder="Find an event…" aria-label="Search events"></div>
+            <div id="event-table-panel" role="tabpanel" aria-labelledby="tab-pending"><div class="table-scroll"><table><thead id="table-head"></thead><tbody id="table-body"></tbody></table></div><div id="table-empty" class="empty-state"><div class="empty-icon" aria-hidden="true">✓</div><strong>Loading your production activity</strong><p>Your events will appear here.</p></div></div>
+            <div class="table-footer"><span id="table-caption">Latest 200 records per view</span><button id="ack-button" class="button primary" disabled>Acknowledge selected <span id="selected-count">0</span></button></div>
+          </section>
+
+          <section class="panel" id="submit-panel">
+            <div class="panel-heading"><div><h2>Submit a production event</h2><p>Add a count or reverse an incorrect one.</p></div><span class="label-muted">MANUAL ENTRY</span></div>
+            <div class="composer"><div class="composer-toolbar"><label for="event-input">Event JSON</label><div class="example-buttons"><button data-example="count">Count +5</button><button data-example="void">Correction</button><button data-example="batch">Batch example</button></div></div><textarea id="event-input" spellcheck="false" aria-describedby="input-help" placeholder='{"source_id":"LINE-01", ...}'></textarea><div class="composer-footer"><p id="input-help">One event or an array. Each item gets its own result.</p><button id="submit-button" class="button primary">Submit event <span aria-hidden="true">→</span></button></div><div id="submit-message" class="notice" role="status" hidden></div><div id="submission-results" class="submission-results" aria-live="polite"></div></div>
+          </section>
+        </div>
+
+        <aside class="detail-column">
+          <section class="panel" id="device-panel"><div class="panel-heading"><div><h2>Device connection</h2><p>MQTT simulator integration</p></div><span class="device-symbol" aria-hidden="true">⌁</span></div><div class="device-body"><div class="device-status"><span id="mqtt-dot" class="status-dot"></span><div><strong id="mqtt-state">Connecting…</strong><small id="mqtt-description">Checking the device connection</small></div></div><dl class="detail-list"><div><dt>Candidate ID</dt><dd id="candidate-id">—</dd></div><div><dt>Protocol</dt><dd>MQTT 3.1.1 · QoS 1</dd></div><div><dt>Last heartbeat</dt><dd id="last-heartbeat">—</dd></div></dl><div class="challenge-stats"><div><strong id="challenges-received">—</strong><span>Received</span></div><div><strong id="challenges-completed">—</strong><span>Completed</span></div><div><strong id="challenges-failed">—</strong><span>Failed</span></div></div><div id="mqtt-error" class="notice error" hidden></div><details class="topic-details"><summary>Connection details</summary><p id="mqtt-broker"></p><code id="mqtt-topic"></code></details></div></section>
+          <section class="panel"><div class="panel-heading"><div><h2>Latest challenge</h2><p>A request and its matching response.</p></div></div><div class="device-body"><dl class="detail-list"><div><dt>Challenge</dt><dd id="last-challenge-id">No challenge yet</dd></div><div><dt>Received</dt><dd id="last-challenge-time">—</dd></div><div><dt>Response</dt><dd id="last-response">—</dd></div></dl><div id="challenge-list" class="challenge-list"></div><details id="response-details" hidden><summary>View latest response</summary><pre id="response-json"></pre></details></div></section>
+          <div class="review-note"><span aria-hidden="true">↳</span><div><strong>Corrections stay on record.</strong><p>A VOID reverses a count without erasing its history. Completed corrections are acknowledged automatically.</p></div></div>
+        </aside>
+      </div>
+      <footer class="page-footer"><span>NorthBridge Garments <span class="footer-dot">·</span> Production Desk</span><span id="sync-label">Updates every 5 seconds</span></footer>
+    </div>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
