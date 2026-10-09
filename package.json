@@ -9,6 +9,8 @@
   },
   "scripts": {
     "start": "node src/server.js",
+    "start:local": "node scripts/run-local.js",
+    "simulate:local": "node scripts/simulate-local.js",
     "dev": "node --watch src/server.js",
     "db:create": "node scripts/setup-database.js",
     "db:init": "node scripts/migrate.js",

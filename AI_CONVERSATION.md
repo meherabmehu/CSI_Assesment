@@ -6,7 +6,7 @@ This record is based on the actual conversation. The original requests were most
 
 ## 1. Understanding the assessment
 
-**User:** Please read the full project brief carefully and explain it to me in very simple Bengali.
+**User:** Please read the full project brief carefully and explain it to me in very simple word.
 
 **Assistant:** The project tracks factory production. COUNT adds production, VOID corrects a count, and PostgreSQL keeps the events and submission history. The dashboard shows the current state, while MQTT lets an external simulator send events to the backend. Some rules in the brief conflict, so the implementation decisions need to be documented.
 
@@ -79,3 +79,9 @@ This record is based on the actual conversation. The original requests were most
 **Assistant:** The photo is readable. It requires COUNT quantities from 1 to 500, a persistent rejected-submissions summary, a production-source filter, and a seventh dashboard indicator. I applied these changes to the existing application, keeping the shared REST/MQTT rules and earlier functionality.
 
 **Assistant:** COUNT 450 is accepted and COUNT 501 is rejected without increasing production. The source filter applies to summary, pending events, and exceptions. The updated application passes 55 automated tests and 20 browser checks. Both AI documents are now concise English records based on this conversation.
+
+## 11. Running on my laptop
+
+**User:** Set it up so I can run the application live on my laptop.
+
+**Assistant:** I added one-click start and stop files. The app uses your local PostgreSQL database and a local MQTT broker with employee ID 08. I checked startup, shutdown, restart, and a real MQTT challenge/response. Use START_LOCAL.cmd to open the dashboard, STOP_LOCAL.cmd to stop it, and npm run simulate:local for the MQTT demo.

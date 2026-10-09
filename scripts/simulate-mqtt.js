@@ -26,7 +26,8 @@ try {
   }, body);
   console.log(JSON.stringify(result, null, 2));
   await mkdir(new URL('../artifacts/', import.meta.url), { recursive: true });
-  await writeFile(new URL('../artifacts/mqtt-live-verification.json', import.meta.url), JSON.stringify({ broker: config.mqtt.url, request: body, response: result }, null, 2) + '\n');
+  const evidenceFile = process.env.SIMULATION_EVIDENCE_MODE === 'local' ? 'mqtt-local-verification.json' : 'mqtt-live-verification.json';
+  await writeFile(new URL(`../artifacts/${evidenceFile}`, import.meta.url), JSON.stringify({ broker: config.mqtt.url, request: body, response: result }, null, 2) + '\n');
   if (result.status !== 'COMPLETED') process.exitCode = 1;
 } catch (error) {
   console.error('MQTT simulation failed:', error.message);

@@ -2,6 +2,14 @@
 
 ## আপনার কম্পিউটারে এখন
 
+### এক ক্লিকে ল্যাপটপে চালু করুন
+
+প্রজেক্ট ফোল্ডারের **START_LOCAL.cmd**-এ double-click করুন। PostgreSQL-এর বর্তমান `.env` ব্যবহার করে অ্যাপ ও local MQTT broker চালু হবে এবং browser খুলবে। আগে থেকেই অ্যাপ চালু থাকলে আবার চালু করবে না। বন্ধ করতে **STOP_LOCAL.cmd**-এ double-click করুন; database-এর তথ্য থাকবে।
+
+এই local mode-এ MQTT সংযোগ আপনার ল্যাপটপের ভেতরেই চলে। Employee ID `08` থাকে। MQTT পরীক্ষা করতে project terminal-এ `npm run simulate:local` চালান। এটি পরীক্ষামূলক COUNT, duplicate ও VOID পাঠিয়ে matching response দেখায়। Demo history আসল local database-এ থাকবে, তবে COUNT-এর পর VOID থাকায় net production বাড়বে না।
+
+চালু হতে সমস্যা হলে PostgreSQL service চালু আছে কি না এবং `.runtime/server-error.log` দেখুন। নতুন কম্পিউটারে প্রথমে Node.js ও PostgreSQL install, `npm ci`, `.env` configure এবং `npm run db:create` করতে হবে।
+
 PostgreSQL সংযুক্ত, `cis_assessment` database তৈরি এবং Employee/Candidate ID `08` সেট করা আছে। Password স্থানীয় `.env`-এ আছে; GitHub-এ নেই।
 
 প্রজেক্টের terminal-এ চালান:

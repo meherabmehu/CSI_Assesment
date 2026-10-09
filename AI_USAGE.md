@@ -12,6 +12,7 @@ The AI helped with:
 - Implementing the existing Node.js/Express modular monolith, PostgreSQL storage, MQTT worker, and dashboard.
 - Reviewing bugs, adding regression tests, running local broker and browser checks, and preparing submission files.
 - Applying the change request: COUNT quantities from 1 to 500, persistent rejected-submission totals, a production-source input, and a seventh dashboard indicator.
+- Preparing one-click laptop startup/shutdown and verifying a local MQTT demo against the configured project database.
 
 ## My input and decisions
 

@@ -1,0 +1,67 @@
+{
+  "broker": "mqtt://127.0.0.1:54652",
+  "request": {
+    "protocol_version": "1.0",
+    "candidate_id": "08",
+    "challenge_id": "CH-DEMO-2aa426c3",
+    "command": "PROCESS_EVENTS",
+    "sent_at": "2026-10-09T08:43:25.520Z",
+    "expires_at": "2026-10-09T08:43:40.520Z",
+    "events": [
+      {
+        "source_id": "DEMO-LINE",
+        "event_id": "EV-DEMO-cb7106f0",
+        "type": "COUNT",
+        "quantity": 5,
+        "event_time": "2026-10-09T08:43:25.520Z"
+      },
+      {
+        "source_id": "DEMO-LINE",
+        "event_id": "EV-DEMO-cb7106f0",
+        "type": "COUNT",
+        "quantity": 5,
+        "event_time": "2026-10-09T08:43:25.520Z"
+      },
+      {
+        "source_id": "DEMO-LINE",
+        "event_id": "EV-DEMO-cb7106f0-VOID",
+        "type": "VOID",
+        "target_event_id": "EV-DEMO-cb7106f0",
+        "event_time": "2026-10-09T08:43:25.520Z"
+      }
+    ]
+  },
+  "response": {
+    "protocol_version": "1.0",
+    "candidate_id": "08",
+    "challenge_id": "CH-DEMO-2aa426c3",
+    "status": "COMPLETED",
+    "processed_at": "2026-10-09T08:43:25.562Z",
+    "results": [
+      {
+        "event_id": "EV-DEMO-cb7106f0",
+        "status": "ACCEPTED",
+        "message": "Production count recorded."
+      },
+      {
+        "event_id": "EV-DEMO-cb7106f0",
+        "status": "DUPLICATE",
+        "message": "This event has already been submitted; no production was added."
+      },
+      {
+        "event_id": "EV-DEMO-cb7106f0-VOID",
+        "status": "ACCEPTED",
+        "message": "The target COUNT was reversed; the correction was automatically acknowledged."
+      }
+    ],
+    "state": {
+      "net_total": 0,
+      "processed_events": 2,
+      "pending_ack": 1,
+      "unresolved": 0,
+      "duplicates": 1,
+      "conflicts": 0,
+      "rejected_submissions": 0
+    }
+  }
+}

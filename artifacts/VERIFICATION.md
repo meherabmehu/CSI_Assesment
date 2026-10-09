@@ -24,6 +24,8 @@ These screenshot totals come from isolated test data, not real factory productio
 
 ## External integration boundary
 
+The Windows laptop launcher was also verified through start, stop, restart, and reuse. It runs an actual loopback MQTT broker alongside the app. `npm run simulate:local` completed a challenge for candidate 08 against the main local database, recording COUNT, DUPLICATE and VOID with net production unchanged at zero. These demo attempts remain in local history. Its evidence is `mqtt-local-verification.json`; it is separate from any external broker evidence.
+
 The MQTT implementation is configured for the PDF broker `152.42.238.142:1883` and the `fse-01/08/*` namespace. Real MQTT transport has been verified against a local broker. An external assessment-broker run has **not** been performed: automatic approval review requested explicit permission before sending database-derived event results and summary counts to that destination. The running local application was started with external MQTT disabled while that permission is pending.
 
 The user's confirmed employee ID is not by itself evidence that the remote broker accepted a session. Do not present local screenshots as examiner-broker evidence. After approval and a successful live run, `npm run simulate` generates `mqtt-live-verification.json` with the actual external request and correlated response.
