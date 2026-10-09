@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 import { createPool, withTransaction } from '../src/shared/db.js';
 
 export async function migrate(pool) {
@@ -6,7 +7,7 @@ export async function migrate(pool) {
   await withTransaction(pool, (client) => client.query(sql));
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file:///${process.argv[1].replaceAll('\\', '/')}`).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const pool = createPool();
   try {
     await migrate(pool);
